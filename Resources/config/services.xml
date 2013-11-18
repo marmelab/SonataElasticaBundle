@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="proxy_model_manager_service_id">marmelab.sonata.admin.manager.elastica</parameter>
+        <parameter key="datagrid_service_id">marmelab.sonata.admin.builder.elastica_datagrid</parameter>
+        <parameter key="proxy_repository_service_id">marmelab.sonata.elastica.proxy_repository</parameter>
+    </parameters>
+
+    <services>
+        <!-- Proxy for model manager -->
+        <service id="marmelab.sonata.admin.manager.elastica" class="Marmelab\SonataElasticaAdapterBundle\Model\ElasticaModelManager">
+            <argument/>
+            <argument type="service" id="marmelab.sonata.elastica.proxy_repository" />
+        </service>
+        <!-- Proxy for repository -->
+        <service id="marmelab.sonata.elastica.proxy_repository" class="Marmelab\SonataElasticaAdapterBundle\Repository\ElasticaProxyRepository"/>
+        <!-- Transformer -->
+        <service id="marmelab.sonata.elastica.transformer" class="Marmelab\SonataElasticaAdapterBundle\Transformer\ElasticaToModelTransformer"/>
+        <!-- Datagrid -->
+        <service id="marmelab.sonata.admin.builder.elastica_datagrid" class="Marmelab\SonataElasticaAdapterBundle\Builder\ElasticaDatagridBuilder">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="sonata.admin.builder.filter.factory" />
+            <argument />
+            <argument type="service" id="marmelab.sonata.elastica.proxy_repository" />
+        </service>
+    </services>
+</container>
