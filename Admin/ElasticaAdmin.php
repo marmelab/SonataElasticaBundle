@@ -1,6 +1,6 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Admin;
+namespace Marmelab\SonataElasticaBundle\Admin;
 
 use FOS\ElasticaBundle\Finder\FinderInterface;
 use Sonata\AdminBundle\Admin\Admin;

@@ -1,4 +1,4 @@
-SonataElasticaAdapter
+SonataElastica
 =====================
 
 Power the Sonata Admin list view and filters by an ElasticSearch index to speed up navigation.
@@ -17,12 +17,12 @@ It can be used with Doctrine (ORM, ODM, PHPCR-ODM), or Propel ORM:
 
 ## Installation
 
-Require `marmelab/sonata-elastica-adapter-bundle` in your `composer.json` file:
+Require `marmelab/sonata-elastica-bundle` in your `composer.json` file:
 
 ```json
 {
     "require": {
-        "marmelab/sonata-elastica-adapter-bundle": "@stable"
+        "marmelab/sonata-elastica-bundle": "@stable"
     }
 }
 ```
@@ -104,7 +104,7 @@ fos_elastica:
 ### Step 2/2 : Extend `ElasticaAdmin` in Your Admin Class
 
 ```php
-use Marmelab\SonataElasticaAdapterBundle\Admin\ElasticaAdmin;
+use Marmelab\SonataElasticaBundle\Admin\ElasticaAdmin;
 
 class BookAdmin extends ElasticaAdmin
 {
@@ -125,11 +125,11 @@ This bundle allows to use a custom transformer service to hydrate ElasticSearch 
     <argument>AcmeBookBundle:BookCRUD</argument>
     <argument/>
     <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
-         transformer="marmelab.sonata.elastica.transformer" searcher="elastica" search_index="acme.book"/>
+         transformer="marmelab.book.elastica.transformer" searcher="elastica" search_index="acme.book"/>
 </service>
 ```
 
-The default transformer (`marmelab.sonata.elastica.transformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
+The default transformer (`marmelab.book.elastica.transformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
 
 ## License

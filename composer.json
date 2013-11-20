@@ -1,5 +1,5 @@
 {
-  "name": "marmelab/sonata-elastica-adapter-bundle",
+  "name": "marmelab/sonata-elastica-bundle",
   "description": "Adapter for elastica in Sonata admin bundle ",
   "keywords": ["elastica", "sonata", "adapter"],
   "type": "symfony-bundle",
@@ -10,7 +10,7 @@
     "friendsofsymfony/elastica-bundle": "3.0.x-dev"
   },
   "autoload": {
-    "psr-0": { "Marmelab\\SonataElasticaAdapterBundle": "" }
+    "psr-0": { "Marmelab\\SonataElasticaBundle": "" }
   },
-  "target-dir": "Marmelab/SonataElasticaAdapterBundle"
+  "target-dir": "Marmelab/SonataElasticaBundle"
 }

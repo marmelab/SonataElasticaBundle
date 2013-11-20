@@ -1,6 +1,6 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Datagrid;
+namespace Marmelab\SonataElasticaBundle\Datagrid;
 
 use Doctrine\ORM\Query;
 use Sonata\AdminBundle\Datagrid\Pager as BasePager;
