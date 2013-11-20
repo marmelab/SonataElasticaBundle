@@ -1,9 +1,9 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Builder;
+namespace Marmelab\SonataElasticaBundle\Builder;
 
-use Marmelab\SonataElasticaAdapterBundle\Datagrid\ElasticaPager;
-use Marmelab\SonataElasticaAdapterBundle\Repository\ElasticaProxyRepository;
+use Marmelab\SonataElasticaBundle\Datagrid\ElasticaPager;
+use Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository;
 use Sonata\AdminBundle\Admin\AdminInterface;
 use Sonata\AdminBundle\Datagrid\Datagrid;
 use Sonata\AdminBundle\Filter\FilterFactoryInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Repository;
+namespace Marmelab\SonataElasticaBundle\Repository;
 
 use Elastica\Query;
 use Elastica\Query\Bool as QueryBool;

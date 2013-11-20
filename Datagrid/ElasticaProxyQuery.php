@@ -1,8 +1,8 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Datagrid;
+namespace Marmelab\SonataElasticaBundle\Datagrid;
 
-use Marmelab\SonataElasticaAdapterBundle\Repository\ElasticaProxyRepository;
+use Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository;
 use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
 
 class ElasticaProxyQuery implements ProxyQueryInterface

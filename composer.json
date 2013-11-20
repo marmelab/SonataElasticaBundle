@@ -10,7 +10,7 @@
     "friendsofsymfony/elastica-bundle": "3.0.x-dev"
   },
   "autoload": {
-    "psr-0": { "Marmelab\\SonataElasticaAdapterBundle": "" }
+    "psr-0": { "Marmelab\\SonataElasticaBundle": "" }
   },
-  "target-dir": "Marmelab/SonataElasticaAdapterBundle"
+  "target-dir": "Marmelab/SonataElasticaBundle"
 }

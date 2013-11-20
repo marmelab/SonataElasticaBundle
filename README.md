@@ -1,4 +1,4 @@
-SonataElasticaAdapter
+SonataElastica
 =====================
 
 Power the Sonata Admin list view and filters by an ElasticSearch index to speed up navigation.
@@ -104,7 +104,7 @@ fos_elastica:
 ### Step 2/2 : Extend `ElasticaAdmin` in Your Admin Class
 
 ```php
-use Marmelab\SonataElasticaAdapterBundle\Admin\ElasticaAdmin;
+use Marmelab\SonataElasticaBundle\Admin\ElasticaAdmin;
 
 class BookAdmin extends ElasticaAdmin
 {

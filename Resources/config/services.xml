@@ -11,16 +11,16 @@
 
     <services>
         <!-- Proxy for model manager -->
-        <service id="marmelab.sonata.admin.manager.elastica" class="Marmelab\SonataElasticaAdapterBundle\Model\ElasticaModelManager">
+        <service id="marmelab.sonata.admin.manager.elastica" class="Marmelab\SonataElasticaBundle\Model\ElasticaModelManager">
             <argument/>
             <argument type="service" id="marmelab.sonata.elastica.proxy_repository" />
         </service>
         <!-- Proxy for repository -->
-        <service id="marmelab.sonata.elastica.proxy_repository" class="Marmelab\SonataElasticaAdapterBundle\Repository\ElasticaProxyRepository"/>
+        <service id="marmelab.sonata.elastica.proxy_repository" class="Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository"/>
         <!-- Transformer -->
-        <service id="marmelab.sonata.elastica.transformer" class="Marmelab\SonataElasticaAdapterBundle\Transformer\ElasticaToModelTransformer"/>
+        <service id="marmelab.sonata.elastica.transformer" class="Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer"/>
         <!-- Datagrid -->
-        <service id="marmelab.sonata.admin.builder.elastica_datagrid" class="Marmelab\SonataElasticaAdapterBundle\Builder\ElasticaDatagridBuilder">
+        <service id="marmelab.sonata.admin.builder.elastica_datagrid" class="Marmelab\SonataElasticaBundle\Builder\ElasticaDatagridBuilder">
             <argument type="service" id="form.factory" />
             <argument type="service" id="sonata.admin.builder.filter.factory" />
             <argument />

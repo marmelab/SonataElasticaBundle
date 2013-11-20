@@ -1,6 +1,6 @@
 <?php
 
-namespace Marmelab\SonataElasticaAdapterBundle\Transformer;
+namespace Marmelab\SonataElasticaBundle\Transformer;
 
 use FOS\ElasticaBundle\Transformer\ElasticaToModelTransformerInterface;
 
