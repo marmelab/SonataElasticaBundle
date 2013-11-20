@@ -4,6 +4,7 @@ namespace Marmelab\SonataElasticaBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
@@ -51,7 +52,9 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             // use custom transformer
             else if (isset($attributes['transformer']) && !empty($attributes['transformer'])) {
 
-                $transformerService = $container->getDefinition($attributes['transformer']);
+                $transformerService = new Definition($attributes['transformer']);
+                $transformerService->setClass('Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer');
+
 
                 // get default finder for admin
                 $defaultFinderService = $container->getDefinition($defaultAdminFinderId);

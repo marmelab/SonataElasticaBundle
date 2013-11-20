@@ -17,8 +17,6 @@
         </service>
         <!-- Proxy for repository -->
         <service id="marmelab.sonata.elastica.proxy_repository" class="Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository"/>
-        <!-- Transformer -->
-        <service id="marmelab.sonata.elastica.transformer" class="Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer"/>
         <!-- Datagrid -->
         <service id="marmelab.sonata.admin.builder.elastica_datagrid" class="Marmelab\SonataElasticaBundle\Builder\ElasticaDatagridBuilder">
             <argument type="service" id="form.factory" />
