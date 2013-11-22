@@ -52,7 +52,17 @@ class ElasticaToModelTransformer implements ElasticaToModelTransformerInterface
             foreach ($elasticaObject['_source'] as $attributeName => $attributeValue) {
 
                 if (property_exists($this->objectClass, $attributeName)) {
-                    $method = 'set' . ucfirst($attributeName);
+                    $methodName = '';
+                    if (strpos($attributeName, '_')) {
+                        foreach(explode('_', $attributeName) as $w) {
+                            $methodName .= ucfirst($w);
+                        }
+                    }
+                    else {
+                        $methodName = ucfirst($attributeName);
+                    }
+
+                    $method = 'set' . $methodName;
                     $obj->{$method}($attributeValue);
                 }
 
