@@ -113,11 +113,12 @@ This bundle allows to use a custom transformer service to hydrate ElasticSearch 
     <argument>AcmeBookBundle:BookCRUD</argument>
     <argument/>
     <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
-         transformer_class="Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer" searcher="elastica" search_index="acme.book"/>
+         transformer="basic" searcher="elastica" search_index="acme.book"/>
 </service>
 ```
 
-The default transformer class (`Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer class to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
+The default transformer (used if you set the value to `basic`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. `
+You can of course use a custom transformer to implement a more sophisticated hydration logic, by providing your service's id. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
 
 ## License
