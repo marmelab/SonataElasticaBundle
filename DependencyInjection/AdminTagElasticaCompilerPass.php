@@ -5,7 +5,6 @@ namespace Marmelab\SonataElasticaBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
 
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
 {
@@ -22,39 +21,40 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             }
 
             // get orm services
-            $ormGuesser = $this->getSonataORMGuesserService($attributes['manager_type']);
-            $ormModelManager = $this->getSonataORMModelManagerService($attributes['manager_type']);
+            $ormGuesser = $this->getSonataORMGuesserService($container, $attributes['manager_type']);
+            $ormModelManager = $this->getSonataORMModelManagerService($container, $attributes['manager_type']);
+            $finder = $this->getFinderService($container, $attributes['search_index']);
 
             // create repository, datagrid & modelManager services
-            $proxyRepository = $this->createProxyRepositoryService($id);
+            $proxyRepository = $this->createProxyRepositoryService($id, $finder);
             $datagrid = $this->createDatagridService($container, $id, $ormGuesser, $proxyRepository);
             $modelManager = $this->createModelManagerService($id, $ormModelManager, $proxyRepository);
-
 
             // define model manager & datagrid to admin service
             $adminService = $container->getDefinition($id);
             $adminService->addMethodCall('setModelManager', array($modelManager));
             $adminService->addMethodCall('setDatagridBuilder', array($datagrid));
 
-            $defaultAdminFinderId = 'fos_elastica.finder.' .$attributes['search_index'];
-
-            if (!isset($attributes['transformer'])) {
-                $this->useDefaultTransformer($adminService, $defaultAdminFinderId);
-            } else if (isset($attributes['transformer']) && !empty($attributes['transformer'])) {
-                $this->useCustomTransformer($container, $adminService, $defaultAdminFinderId, $attributes['transformer']);
+            // set custom transformer
+            if (isset($attributes['transformer_class']) && !empty($attributes['transformer_class'])) {
+                $this->useCustomTransformer($id, $adminService, $finder, $attributes['transformer_class']);
             }
         }
     }
 
     /**
-     * @param string $adminName
+     * @param string     $adminName
+     * @param Definition $finder
      * @return Definition
      */
-    private function createProxyRepositoryService($adminName)
+    private function createProxyRepositoryService($adminName, Definition $finder)
     {
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
         $service->setClass('Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository');
+        $service->setArguments( array(
+            $finder
+        ));
 
         return $service;
     }
@@ -62,84 +62,89 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     /**
      * @param ContainerBuilder $container
      * @param string           $adminName
-     * @param Reference        $guesser
-     * @param Reference        $proxyRepository
+     * @param Definition       $guesser
+     * @param Definition       $proxyRepository
      * @return Definition
      */
-    private function createDatagridService($container, $adminName, $guesser, $proxyRepository)
+    private function createDatagridService(ContainerBuilder $container, $adminName, Definition $guesser, Definition $proxyRepository)
     {
         $serviceName = sprintf('sonata.%s.datagrid', $adminName);
         $service = new Definition($serviceName);
         $service->setClass('Marmelab\SonataElasticaBundle\Builder\ElasticaDatagridBuilder');
-
-        $arguments = array();
-        $arguments[0] = $container->getDefinition('form.factory');
-        $arguments[1] = $container->getDefinition('sonata.admin.builder.filter.factory');
-        $arguments[2] = $guesser;
-        $arguments[3] = $proxyRepository;
-
-        $service->setArguments($arguments);
+        $service->setArguments(array(
+            $container->getDefinition('form.factory'),
+            $container->getDefinition('sonata.admin.builder.filter.factory'),
+            $guesser,
+            $proxyRepository
+        ));
 
         return $service;
     }
 
-    private function createModelManagerService($adminName, $ormModelManager, $proxyRepository) {
+    /**
+     * @param string     $adminName
+     * @param Definition $ormModelManager
+     * @param Definition $proxyRepository
+     * @return Definition
+     */
+    private function createModelManagerService($adminName, Definition $ormModelManager, Definition $proxyRepository) {
         $serviceName = sprintf('sonata.%s.model_manager', $adminName);
         $service = new Definition($serviceName);
         $service->setClass('Marmelab\SonataElasticaBundle\Model\ElasticaModelManager');
-
-        $arguments = array();
-        $arguments[0] = $ormModelManager;
-        $arguments[1] = $proxyRepository;
-
-        $service->setArguments($arguments);
+        $service->setArguments(array(
+            $ormModelManager,
+            $proxyRepository
+        ));
 
         return $service;
     }
 
-    private function useDefaultTransformer($adminService, $finderServiceID) {
-        $args = $adminService->getArguments();
-        $args[3] = new Reference($finderServiceID);
-        $adminService->setArguments($args);
-    }
+    /**
+     * @param string     $adminName
+     * @param Definition $adminService
+     * @param Definition $finderService
+     * @param string     $transformerServiceClass
+     */
+    private function useCustomTransformer($adminName, Definition $adminService,Definition $finderService, $transformerServiceClass) {
+        $serviceName = sprintf('sonata.%s.elastica-transformer', $adminName);
+        $transformerService = new Definition($serviceName);
+        $transformerService->setClass($transformerServiceClass);
 
-    private function useCustomTransformer($container, $adminService, $finderServiceID, $transformerServiceID) {
-        $transformerService = new Definition($transformerServiceID);
-        $transformerService->setClass('Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer');
-
-
-        // get default finder for admin
-        $defaultFinderService = $container->getDefinition($finderServiceID);
-        $finderArgs = $defaultFinderService->getArguments();
-
+        $finderArgs = $finderService->getArguments();
         $finderArgs[1] = $transformerService;
-        $defaultFinderService->setArguments($finderArgs);
+        $finderService->setArguments($finderArgs);
 
         // set transformer object class
         $transformerService->addMethodCall('setObjectClass', array($adminService->getArgument(1)));
-
-        // add admin finder service to admin service
-        $args = $adminService->getArguments();
-        $args[3] = ($defaultFinderService);
-        $adminService->setArguments($args);
     }
 
     /**
-     * @param string $baseManagerType
-     * @return Reference
+     * @param ContainerBuilder $container
+     * @param $baseManagerType
+     * @return Definition
      */
-    private function getSonataORMGuesserService($baseManagerType)
+    private function getSonataORMGuesserService(ContainerBuilder $container, $baseManagerType)
     {
-        return new Reference(sprintf('sonata.admin.guesser.%s_datagrid_chain', $baseManagerType));
+        return $container->getDefinition(sprintf('sonata.admin.guesser.%s_datagrid_chain', $baseManagerType));
     }
 
     /**
-     * @param string $baseManagerType
-     * @return Reference
+     * @param ContainerBuilder $container
+     * @param string           $baseManagerType
+     * @return Definition
      */
-    private function getSonataORMModelManagerService($baseManagerType)
+    private function getSonataORMModelManagerService(ContainerBuilder $container, $baseManagerType)
     {
-        return new Reference(sprintf('sonata.admin.manager.%s', $baseManagerType));
+        return $container->getDefinition(sprintf('sonata.admin.manager.%s', $baseManagerType));
     }
 
+    /**
+     * @param ContainerBuilder $container
+     * @param string           $searchIndex
+     * @return Definition
+     */
+    private function getFinderService(ContainerBuilder $container, $searchIndex)
+    {
+        return $container->getDefinition(sprintf('fos_elastica.finder.%s', $searchIndex));
+    }
 }

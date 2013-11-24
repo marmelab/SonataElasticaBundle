@@ -38,9 +38,6 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
     public function getBaseDatagrid(AdminInterface $admin, array $values = array())
     {
         $modelClass = $admin->getClass();
-        $finder = $admin->getFinder();
-
-        $this->repository->setFinder($finder);
         $this->repository->setModelIdentifier(current($admin->getModelManager()->getIdentifierFieldNames($modelClass)));
 
         $pager = new ElasticaPager();

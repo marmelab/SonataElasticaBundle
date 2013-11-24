@@ -60,18 +60,16 @@ book:
 
 ## Configuration
 
-To enable ElasticSearch for a given model admin, you only need to edit the `sonata.admin` tag in the `services.xml` and extend `ElasticaAdmin` instead of `Admin`.
-
-### Step 1/2: Configure admin service
+To enable ElasticSearch for a given model admin, you only need to edit the `sonata.admin` tag in the `services.xml`:
 
 * Add a fourth empty argument to the admin service definition.
-* Add two attributes in the `sonata.admin` tag :
+* Add two attributes in the `sonata.admin` tag:
     * `searcher="elastica"`
     * `search_index=""`, set the value of your elastica index type
 
 **Example**
 
-For a `Book` entity :
+For a `Book` entity:
 
 ```xml
 <service id="book.admin" class="Acme\BookBundle\Admin\BookAdmin">
@@ -101,16 +99,6 @@ fos_elastica:
                         ...
 ```
 
-### Step 2/2 : Extend `ElasticaAdmin` in Your Admin Class
-
-```php
-use Marmelab\SonataElasticaBundle\Admin\ElasticaAdmin;
-
-class BookAdmin extends ElasticaAdmin
-{
-    // ...
-}
-```
 
 ## Optional: Bypass ORM Hydration Completely
 
@@ -125,11 +113,11 @@ This bundle allows to use a custom transformer service to hydrate ElasticSearch 
     <argument>AcmeBookBundle:BookCRUD</argument>
     <argument/>
     <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
-         transformer="marmelab.book.elastica.transformer" searcher="elastica" search_index="acme.book"/>
+         transformer_class="Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer" searcher="elastica" search_index="acme.book"/>
 </service>
 ```
 
-The default transformer (`marmelab.book.elastica.transformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
+The default transformer class (`Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer class to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
 
 ## License
