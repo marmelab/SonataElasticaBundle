@@ -12,5 +12,10 @@
   "autoload": {
     "psr-0": { "Marmelab\\SonataElasticaBundle": "" }
   },
-  "target-dir": "Marmelab/SonataElasticaBundle"
+  "target-dir": "Marmelab/SonataElasticaBundle",
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  }
 }
