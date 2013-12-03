@@ -121,7 +121,7 @@ Using your custom transformer:
          fastGrid="true" transformer="my.custom.transformer.service" searcher="elastica" search_index="acme.book"/>
 ```
 
-The default transformer does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. `
+The default transformer does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method.
 You can of course use a custom transformer to implement a more sophisticated hydration logic, by providing your service's id. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
 
