@@ -60,18 +60,16 @@ book:
 
 ## Configuration
 
-To enable ElasticSearch for a given model admin, you only need to edit the `sonata.admin` tag in the `services.xml` and extend `ElasticaAdmin` instead of `Admin`.
-
-### Step 1/2: Configure admin service
+To enable ElasticSearch for a given model admin, you only need to edit the `sonata.admin` tag in the `services.xml`:
 
 * Add a fourth empty argument to the admin service definition.
-* Add two attributes in the `sonata.admin` tag :
+* Add two attributes in the `sonata.admin` tag:
     * `searcher="elastica"`
     * `search_index=""`, set the value of your elastica index type
 
 **Example**
 
-For a `Book` entity :
+For a `Book` entity:
 
 ```xml
 <service id="book.admin" class="Acme\BookBundle\Admin\BookAdmin">
@@ -101,35 +99,30 @@ fos_elastica:
                         ...
 ```
 
-### Step 2/2 : Extend `ElasticaAdmin` in Your Admin Class
-
-```php
-use Marmelab\SonataElasticaBundle\Admin\ElasticaAdmin;
-
-class BookAdmin extends ElasticaAdmin
-{
-    // ...
-}
-```
 
 ## Optional: Bypass ORM Hydration Completely
 
 By default, this bundle uses ElasticSearch to find the ids of the entities or documents matching the request, then queries the underlying persistence to get real entities or documents. This should always be a fast query (since it's using a primary key), but it's also a useless query. Indeed, in most cases, all the data required to hydrate the entities is already available in the ElasticSearch response.
 
-This bundle allows to use a custom transformer service to hydrate ElasticSearch results into Entities, therefore saving one query. To enable this transformer, add a new `transformer` parameter to the `admin` tag in `services.xml`:
+This bundle allows to use a custom transformer service to hydrate ElasticSearch results into Entities, therefore saving one query.
+To enable this transformer, add the `fastgrid` parameter to the `admin` tag in `services.xml`:
+
+Using the "basic" transformer:
 
 ```xml
-<service id="book.admin" class="Acme\BookBundle\Admin\BookAdmin">
-    <argument/>
-    <argument>Acme\BookBundle\Entity\Book</argument>
-    <argument>AcmeBookBundle:BookCRUD</argument>
-    <argument/>
-    <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
-         transformer="marmelab.book.elastica.transformer" searcher="elastica" search_index="acme.book"/>
-</service>
+ <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
+         fastGrid="true" searcher="elastica" search_index="acme.book"/>
 ```
 
-The default transformer (`marmelab.book.elastica.transformer`) does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method. You can of course use a custom transformer to implement a more sophisticated hydration logic. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
+Using your custom transformer:
+
+```xml
+ <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
+         fastGrid="true" transformer="my.custom.transformer.service" searcher="elastica" search_index="acme.book"/>
+```
+
+The default transformer does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method.
+You can of course use a custom transformer to implement a more sophisticated hydration logic, by providing your service's id. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
 
 ## License

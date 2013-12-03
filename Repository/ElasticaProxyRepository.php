@@ -22,11 +22,9 @@ class ElasticaProxyRepository
      *
      * @return $this
      */
-    public function setFinder(FinderInterface $finder)
+    public function __construct(FinderInterface $finder)
     {
         $this->finder = $finder;
-
-        return $this;
     }
 
     /**
