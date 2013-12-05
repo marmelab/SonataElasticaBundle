@@ -17,17 +17,35 @@ It can be used with Doctrine (ORM, ODM, PHPCR-ODM), or Propel ORM:
 
 ## Installation
 
+### Step 1: Download using composer 
+
 Require `marmelab/sonata-elastica-bundle` in your `composer.json` file:
 
 ```json
 {
     "require": {
-        "marmelab/sonata-elastica-bundle": "@stable"
+        "marmelab/sonata-elastica-bundle": "dev-master"
     }
 }
 ```
-
 Then run `composer.phar install` as usual.
+
+### Step 2: Enable the bundle
+
+Enable the bundle in the kernel:
+
+``` php
+<?php
+// app/AppKernel.php
+
+public function registerBundles()
+{
+    $bundles = array(
+        // ...
+        new Marmelab\SonataElasticaBundle\MarmelabSonataElasticaBundle(),
+    );
+}
+```
 
 ## Configuration of Elastica Index
 
