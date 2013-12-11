@@ -39,7 +39,11 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
     {
         $modelClass = $admin->getClass();
         $this->repository->setModelIdentifier(current($admin->getModelManager()->getIdentifierFieldNames($modelClass)));
-
+        
+        if (method_exists($admin, 'fieldsMapping')) {
+            $this->repository->setFieldsMapping($admin->fieldsMapping());
+        }
+        
         $pager = new ElasticaPager();
         $pager->setCountColumn($admin->getModelManager()->getIdentifierFieldNames($modelClass));
 

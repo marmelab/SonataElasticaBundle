@@ -17,6 +17,9 @@ class ElasticaProxyRepository
     /** @var  string */
     protected $modelIdentifier;
 
+    /** @var  array */
+    protected $fieldsMapping;
+
     /**
      * @param FinderInterface $finder
      *
@@ -25,6 +28,7 @@ class ElasticaProxyRepository
     public function __construct(FinderInterface $finder)
     {
         $this->finder = $finder;
+        $this->fieldsMapping = array();
     }
 
     /**
@@ -35,6 +39,18 @@ class ElasticaProxyRepository
     public function setModelIdentifier($modelIdentifier)
     {
         $this->modelIdentifier = $modelIdentifier;
+
+        return $this;
+    }
+
+    /**
+    * @param array $mappings
+    *
+    * @return $this
+    */
+    public function setFieldsMapping($mappings)
+    {
+        $this->fieldsMapping = $mappings;
 
         return $this;
     }
@@ -85,8 +101,14 @@ class ElasticaProxyRepository
         $query = new Query($mainQuery);
         $query->setFrom($start);
 
-        if (isset($sortBy['fieldName']) && $sortBy['fieldName'] !== $this->modelIdentifier) {
-            $query->setSort(array($sortBy['fieldName']. '.raw' => array('order' => strtolower($sortOrder))));
+        $fieldName = (isset($sortBy['fieldName'])) ? $sortBy['fieldName'] : null;
+
+        if ($fieldName !== null && $fieldName !== $this->modelIdentifier) {
+
+            if (isset($this->fieldsMapping[$fieldName])) {
+                $fieldName = $this->fieldsMapping[$fieldName];
+            }
+            $query->setSort(array($fieldName. '.raw' => array('order' => strtolower($sortOrder))));
         } else {
             $query->setSort(array(
                 $this->modelIdentifier => array('order' => strtolower($sortOrder)),
