@@ -26,7 +26,8 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $finderService = $this->getFinderService($container, $attributes['search_index']);
 
             // create repository, datagrid & modelManager services
-            $proxyRepositoryService = $this->createProxyRepositoryService($id, $finderService);
+            $mapping = (isset($attributes['fields_mapping'])) ? $container->getParameter($attributes['fields_mapping']) : array();
+            $proxyRepositoryService = $this->createProxyRepositoryService($id, $finderService, $mapping);
             $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService);
             $modelManagerService = $this->createModelManagerService($id, $ormModelManagerService, $proxyRepositoryService);
 
@@ -53,13 +54,14 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      *
      * @return Definition
      */
-    private function createProxyRepositoryService($adminName, Definition $finder)
+    private function createProxyRepositoryService($adminName, Definition $finder, array $mapping)
     {
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
         $service->setClass('Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository');
         $service->setArguments( array(
-            $finder
+            $finder,
+            $mapping
         ));
 
         return $service;
@@ -123,6 +125,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     /**
      * @param ContainerBuilder $container
      * @param string           $transformerServiceName
+     *
      * @return Definition
      */
     private function getCustomTransformer(ContainerBuilder $container, $transformerServiceName)

@@ -25,10 +25,10 @@ class ElasticaProxyRepository
      *
      * @return $this
      */
-    public function __construct(FinderInterface $finder)
+    public function __construct(FinderInterface $finder, array $fieldsMapping)
     {
         $this->finder = $finder;
-        $this->fieldsMapping = array();
+        $this->fieldsMapping = $fieldsMapping;
     }
 
     /**
@@ -39,18 +39,6 @@ class ElasticaProxyRepository
     public function setModelIdentifier($modelIdentifier)
     {
         $this->modelIdentifier = $modelIdentifier;
-
-        return $this;
-    }
-
-    /**
-    * @param array $mappings
-    *
-    * @return $this
-    */
-    public function setFieldsMapping($mappings)
-    {
-        $this->fieldsMapping = $mappings;
 
         return $this;
     }
