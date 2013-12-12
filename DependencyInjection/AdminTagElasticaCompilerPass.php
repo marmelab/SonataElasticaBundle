@@ -9,10 +9,6 @@ use Symfony\Component\DependencyInjection\Definition;
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
 {
 
-    const DOCTRINE = 'orm';
-    const PHPCR = 'doctrine_phpcr';
-    const PROPEL = 'propel';
-
     public function process(ContainerBuilder $container)
     {
         $taggedServices = $container->findTaggedServiceIds('sonata.admin');
@@ -50,16 +46,6 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
                 }
                 $this->useTransformer($transformerService, $adminService, $finderService);
             }
-
-            // override filter class
-            $filterServiceName = sprintf('sonata.admin.%s.filter.type.string', $attributes['manager_type']);
-            $filterService = $container->getDefinition($filterServiceName);
-            switch($attributes['manager_type']) {
-                case self::DOCTRINE: $filterService->setClass('Marmelab\SonataElasticaBundle\Filter\DoctrineORMStringFilter'); break;
-                case self::PHPCR: $filterService->setClass('Marmelab\SonataElasticaBundle\Filter\DoctrinePHPCRStringFilter'); break;
-                case self::PROPEL: $filterService->setClass('Marmelab\SonataElasticaBundle\Filter\PropelStringFilter'); break;
-            }
-            
         }
     }
 
