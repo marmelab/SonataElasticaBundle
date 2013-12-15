@@ -69,6 +69,24 @@ class ElasticaProxyQuery implements ProxyQueryInterface
         $this->params[$name] = $value;
     }
 
+    /**
+     * @param $name
+     *
+     * @return bool
+     */
+    public function hasParameter($name)
+    {
+        return isset($this->params[$name]);
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->params;
+    }
+
     public function getTotalResults()
     {
         return $this->repository->getTotalResult($this->firstResult, $this->limit, $this->sortBy, $this->sortOrder, $this->params);

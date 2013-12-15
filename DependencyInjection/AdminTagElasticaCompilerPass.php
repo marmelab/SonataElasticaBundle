@@ -5,6 +5,7 @@ namespace Marmelab\SonataElasticaBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
 {
@@ -26,11 +27,18 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $ormModelManagerService = $this->getSonataORMModelManagerService($container, $attributes['manager_type']);
             $finderService = $this->getFinderService($container, $attributes['search_index']);
 
-            // create repository, datagrid & modelManager services
+            // create repository & modelManager services
             $mapping = (isset($attributes['fields_mapping'])) ? $container->getParameter($attributes['fields_mapping']) : array();
-            $proxyRepositoryService = $this->createProxyRepositoryService($id, $finderService, $mapping);
-            $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService);
+            $proxyRepositoryService = $this->createProxyRepositoryService($container, $id, $finderService, $mapping);
             $modelManagerService = $this->createModelManagerService($id, $ormModelManagerService, $proxyRepositoryService);
+
+            // create datagrid builder service
+            $searchForm = null;
+            if (isset($attributes['search_form'])) {
+                $searchForm = new Reference($attributes['search_form']);
+            }
+            $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService, $searchForm);
+
 
             // define model manager & datagrid to admin service
             $adminService = $container->getDefinition($id);
@@ -50,16 +58,17 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param string     $adminName
-     * @param Definition $finder
+     * @param ContainerBuilder $container
+     * @param string           $adminName
+     * @param Definition       $finder
      *
      * @return Definition
      */
-    private function createProxyRepositoryService($adminName, Definition $finder, array $mapping)
+    private function createProxyRepositoryService(ContainerBuilder $container, $adminName, Definition $finder, array $mapping)
     {
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
-        $service->setClass('Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository');
+        $service->setClass($container->getParameter('marmelab.elastica.proxy_repository_class'));
         $service->setArguments( array(
             $finder,
             $mapping
@@ -73,10 +82,11 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      * @param string           $adminName
      * @param Definition       $guesser
      * @param Definition       $proxyRepository
+     * @param Reference        $searchType
      *
      * @return Definition
      */
-    private function createDatagridService(ContainerBuilder $container, $adminName, Definition $guesser, Definition $proxyRepository)
+    private function createDatagridService(ContainerBuilder $container, $adminName, Definition $guesser, Definition $proxyRepository, Reference $searchForm = null)
     {
         $serviceName = sprintf('sonata.%s.datagrid', $adminName);
         $service = new Definition($serviceName);
@@ -85,7 +95,8 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $container->getDefinition('form.factory'),
             $container->getDefinition('sonata.admin.builder.filter.factory'),
             $guesser,
-            $proxyRepository
+            $proxyRepository,
+            $searchForm
         ));
 
         return $service;

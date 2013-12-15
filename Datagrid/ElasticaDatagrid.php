@@ -38,6 +38,8 @@ class ElasticaDatagrid implements DatagridInterface
 
     protected $results;
 
+    protected $searchForm;
+
     /**
      * @param ProxyQueryInterface        $query
      * @param FieldDescriptionCollection $columns
@@ -45,13 +47,14 @@ class ElasticaDatagrid implements DatagridInterface
      * @param FormBuilder                $formBuilder
      * @param array                      $values
      */
-    public function __construct(ProxyQueryInterface $query, FieldDescriptionCollection $columns, PagerInterface $pager, FormBuilder $formBuilder, array $values = array())
+    public function __construct(ProxyQueryInterface $query, $searchForm, FieldDescriptionCollection $columns, PagerInterface $pager, FormBuilder $formBuilder, array $values = array())
     {
         $this->pager       = $pager;
         $this->query       = $query;
         $this->values      = $values;
         $this->columns     = $columns;
         $this->formBuilder = $formBuilder;
+        $this->searchForm  = $searchForm;
     }
 
     /**
@@ -85,10 +88,14 @@ class ElasticaDatagrid implements DatagridInterface
             return;
         }
 
-        foreach ($this->getFilters() as $name => $filter) {
-            list($type, $options) = $filter->getRenderSettings();
+        if ($this->searchForm) {
+            $this->formBuilder->add('admin_search_form', $this->searchForm, array('label' => false));
+        } else {
+            foreach ($this->getFilters() as $filter) {
+                list($type, $options) = $filter->getRenderSettings();
 
-            $this->formBuilder->add($filter->getFormName(), $type, $options);
+                $this->formBuilder->add($filter->getFormName(), $type, $options);
+            }
         }
 
         $this->formBuilder->add('_sort_by', 'hidden');
@@ -106,10 +113,26 @@ class ElasticaDatagrid implements DatagridInterface
 
         $data = $this->form->getData();
 
-        foreach ($this->getFilters() as $name => $filter) {
-            $this->values[$name] = isset($this->values[$name]) ? $this->values[$name] : null;
-            $filter->apply($this->query, $data[$filter->getFormName()]);
+        if ($this->searchForm) {
+            foreach($data['admin_search_form'] as $filterName => $filterValue) {
+                if (!$this->isFilterValueValid($filterValue)) {
+                    continue;
+                }
+
+                $this->query->setParameter($filterName, $filterValue);
+            }
+        } else {
+            foreach ($this->getFilters() as $name => $filter) {
+                $this->values[$name] = isset($this->values[$name]) ? $this->values[$name] : null;
+                $filter->apply($this->query, $data[$filter->getFormName()]);
+
+                // Added for phpcr filter
+                if (isset($this->values[$name]['value']) && $this->values[$name]['value'] !== null && !$this->query->hasParameter($name)) {
+                    $this->query->setParameter($name, $this->values[$name]['value']);
+                }
+            }
         }
+
 
         if (isset($this->values['_sort_by'])) {
             if (!$this->values['_sort_by'] instanceof FieldDescriptionInterface) {
@@ -121,6 +144,7 @@ class ElasticaDatagrid implements DatagridInterface
                 $this->query->setSortOrder(isset($this->values['_sort_order']) ? $this->values['_sort_order'] : null);
             }
         }
+
 
         $this->pager->setMaxPerPage(isset($this->values['_per_page']) ? $this->values['_per_page'] : 25);
         $this->pager->setPage(isset($this->values['_page']) ? $this->values['_page'] : 1);
@@ -235,5 +259,27 @@ class ElasticaDatagrid implements DatagridInterface
         $this->buildPager();
 
         return $this->form;
+    }
+
+    private function isFilterValueValid($filterValue)
+    {
+        if (empty($filterValue)) {
+            return false;
+        }
+
+        if (is_array($filterValue)) {
+            $empty = true;
+            foreach ($filterValue as $value) {
+                if (!empty($value)) {
+                    $empty = false;
+                    break;
+                }
+            }
+            if ($empty) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

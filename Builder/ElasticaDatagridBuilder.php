@@ -16,17 +16,20 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
     /** @var ElasticaProxyRepository */
     protected $repository;
 
+    protected $searchForm;
+
     /**
      * @param FormFactory             $formFactory
      * @param FilterFactoryInterface  $filterFactory
      * @param TypeGuesserInterface    $guesser
      * @param ElasticaProxyRepository $repository
      */
-    public function __construct(FormFactory $formFactory, FilterFactoryInterface $filterFactory, TypeGuesserInterface $guesser, ElasticaProxyRepository $repository)
+    public function __construct(FormFactory $formFactory, FilterFactoryInterface $filterFactory, TypeGuesserInterface $guesser, ElasticaProxyRepository $repository, $searchForm)
     {
         parent::__construct($formFactory, $filterFactory, $guesser);
 
         $this->repository = $repository;
+        $this->searchForm = $searchForm;
     }
 
     /**
@@ -39,12 +42,13 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
     {
         $modelClass = $admin->getClass();
         $this->repository->setModelIdentifier(current($admin->getModelManager()->getIdentifierFieldNames($modelClass)));
+        $this->repository->setAdmin($admin);
         
         $pager = new ElasticaPager();
         $pager->setCountColumn($admin->getModelManager()->getIdentifierFieldNames($modelClass));
 
         $formBuilder = $this->formFactory->createNamedBuilder('filter', 'form', array(), array('csrf_protection' => false));
 
-        return new ElasticaDatagrid($admin->createQuery(), $admin->getList(), $pager, $formBuilder, $values);
+        return new ElasticaDatagrid($admin->createQuery(), $this->searchForm, $admin->getList(), $pager, $formBuilder, $values);
     }
 }

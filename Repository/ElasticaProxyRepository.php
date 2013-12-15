@@ -5,7 +5,9 @@ namespace Marmelab\SonataElasticaBundle\Repository;
 use Elastica\Query;
 use Elastica\Query\Bool as QueryBool;
 use Elastica\Query\Text as QueryText;
+use Elastica\Query\AbstractQuery;
 use FOS\ElasticaBundle\Finder\FinderInterface;
+use Sonata\AdminBundle\Admin\AdminInterface;
 
 class ElasticaProxyRepository
 {
@@ -20,6 +22,9 @@ class ElasticaProxyRepository
     /** @var  array */
     protected $fieldsMapping;
 
+    /** @var AdminInterface */
+    protected $admin;
+
     /**
      * @param FinderInterface $finder
      *
@@ -29,6 +34,11 @@ class ElasticaProxyRepository
     {
         $this->finder = $finder;
         $this->fieldsMapping = $fieldsMapping;
+    }
+
+    public function setAdmin(AdminInterface $admin)
+    {
+        $this->admin = $admin;
     }
 
     /**
@@ -70,23 +80,7 @@ class ElasticaProxyRepository
      */
     public function findAll($start, $limit, $sortBy, $sortOrder = 'ASC', $params)
     {
-        $mainQuery = null;
-
-        if (count($params)) {
-            $mainQuery = new QueryBool();
-            foreach ($params as $name => $value) {
-                $fieldName = str_replace('_elastica', '', $name);
-                if (strlen($value) < self::MINIMUM_SEARCH_TERM_LENGTH) {
-                    continue;
-                }
-
-                $fieldQuery = new QueryText();
-                $fieldQuery->setFieldQuery($fieldName, $value);
-                $mainQuery->addMust($fieldQuery);
-            }
-        }
-
-        $query = new Query($mainQuery);
+        $query = count($params) ? $this->createFilterQuery($params) : new Query();
         $query->setFrom($start);
 
         $fieldName = (isset($sortBy['fieldName'])) ? $sortBy['fieldName'] : null;
@@ -113,7 +107,7 @@ class ElasticaProxyRepository
     /**
      * Useful for debugging with elastic head plugin
      *
-     * @param AbstractQuery\Elastica\Query $query
+     * @param \Elastica\Query $query
      *
      * @return string
      */
@@ -122,5 +116,27 @@ class ElasticaProxyRepository
         $wrapper = ($query instanceof AbstractQuery) ? array('query' => $query->toArray()) : $query->toArray();
 
         return json_encode($wrapper);
+    }
+
+    /**
+     * @param array $params
+     * 
+     * @return Query
+     */
+    protected function createFilterQuery(array $params)
+    {
+        $mainQuery = new QueryBool();
+        foreach ($params as $name => $value) {
+            $fieldName = str_replace('_elastica', '', $name);
+            if (strlen($value) < self::MINIMUM_SEARCH_TERM_LENGTH) {
+                continue;
+            }
+
+            $fieldQuery = new QueryText();
+            $fieldQuery->setFieldQuery($fieldName, $value);
+            $mainQuery->addMust($fieldQuery);
+        }
+
+        return new Query($mainQuery);
     }
 }
