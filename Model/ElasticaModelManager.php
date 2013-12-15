@@ -235,7 +235,7 @@ class ElasticaModelManager implements ModelManagerInterface
      */
     public function getUrlsafeIdentifier($model)
     {
-        return $model->getId();
+        return $model ? $model->getId() : null;
     }
 
     /**
