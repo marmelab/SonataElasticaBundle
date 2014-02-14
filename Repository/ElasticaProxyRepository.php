@@ -83,6 +83,7 @@ class ElasticaProxyRepository
         $query = count($params) ? $this->createFilterQuery($params) : new Query();
         $query->setFrom($start);
 
+        // Sort & order
         $fieldName = (isset($sortBy['fieldName'])) ? $sortBy['fieldName'] : null;
 
         if ($fieldName !== null && $fieldName !== $this->modelIdentifier) {
@@ -90,13 +91,19 @@ class ElasticaProxyRepository
             if (isset($this->fieldsMapping[$fieldName])) {
                 $fieldName = $this->fieldsMapping[$fieldName];
             }
-            $query->setSort(array($fieldName. '.raw' => array('order' => strtolower($sortOrder))));
+            $query->setSort(array($fieldName => array('order' => strtolower($sortOrder))));
         } else {
             $query->setSort(array(
                 $this->modelIdentifier => array('order' => strtolower($sortOrder)),
             ));
         }
 
+        // Custom filter for admin
+        if(method_exists($this->admin, 'getExtraFilter')) {
+            $query->setFilter($this->admin->getExtraFilter());
+        }
+
+        // Limit
         if ($limit === null) {
             $limit = 10000; // set to 0 does not seem to work
         }

@@ -46,9 +46,10 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $adminService->addMethodCall('setDatagridBuilder', array($datagridService));
 
             // set custom transformer
-            if (isset($attributes['fastgrid']) && $attributes['fastgrid']) {
+            if (isset($attributes['fastGrid']) && $attributes['fastGrid']) {
                 if (isset($attributes['transformer'])) {
                     $transformerService = $this->getCustomTransformer($container, $attributes['transformer']);
+
                 } else {
                     $transformerService = $this->createBasicTransformer($id);
                 }

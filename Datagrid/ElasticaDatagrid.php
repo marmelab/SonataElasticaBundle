@@ -114,14 +114,17 @@ class ElasticaDatagrid implements DatagridInterface
         $data = $this->form->getData();
 
         if ($this->searchForm) {
+
             foreach($data['admin_search_form'] as $filterName => $filterValue) {
+
                 if (!$this->isFilterValueValid($filterValue)) {
                     continue;
                 }
 
                 $this->query->setParameter($filterName, $filterValue);
             }
-        } else {
+        }
+        else {
             foreach ($this->getFilters() as $name => $filter) {
                 $this->values[$name] = isset($this->values[$name]) ? $this->values[$name] : null;
                 $filter->apply($this->query, $data[$filter->getFormName()]);
@@ -263,15 +266,15 @@ class ElasticaDatagrid implements DatagridInterface
 
     private function isFilterValueValid($filterValue)
     {
-        if (empty($filterValue)) {
+        if ($filterValue === null || $filterValue === '') {
             return false;
         }
 
         if (is_array($filterValue)) {
-            $empty = true;
+            $empty = false;
             foreach ($filterValue as $value) {
-                if (!empty($value)) {
-                    $empty = false;
+                if ($value === null || $value === '') {
+                    $empty = true;
                     break;
                 }
             }
