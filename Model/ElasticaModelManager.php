@@ -221,6 +221,8 @@ class ElasticaModelManager implements ModelManagerInterface
 
             return $model->{'get'.ucfirst($identifierName)}();
         }
+
+        return $identifier;
     }
 
     /**
