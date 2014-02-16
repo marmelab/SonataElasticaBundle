@@ -177,8 +177,28 @@ Then specify this parameter in your tag admin
          fields_mapping="book.admin.elastica.mapping" />
 ```
 
+## Optional: Define a custom filter for your admin
 
-## Optional: Use a custom form filter
+You can specify a custom filter (using elastica filter classes) for your entity admin.
+Simply add a `getExtraFilter()` method in the admin class.
+
+For example, if in my book admin list I want to fetch only the ones that are in a PDF or epub format:
+
+```php
+// in Acme\BookBundle\Admin\BookAdmin
+use Elastica\Filter\Terms;
+
+...
+
+public function getExtraFilter() {
+    $filter = new Terms();
+    $filter->setTerms('format', array('pdf', 'epub'));
+
+    return $filter;
+}
+```
+
+## Optional: Use a custom form filter type
 
 To use a custom form filter class, specify it in the admin tag:
 
