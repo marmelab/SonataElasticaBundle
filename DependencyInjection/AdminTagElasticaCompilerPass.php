@@ -12,6 +12,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container)
     {
+
         $taggedServices = $container->findTaggedServiceIds('sonata.admin');
 
         foreach ($taggedServices as $id => $attributes) {
@@ -25,7 +26,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             // get services
             $ormGuesserService = $this->getSonataORMGuesserService($container, $attributes['manager_type']);
             $ormModelManagerService = $this->getSonataORMModelManagerService($container, $attributes['manager_type']);
-            $finderService = $this->getFinderService($container, $attributes['search_index']);
+            $finderService = $this->createFinderService($container, $attributes['search_index']);
 
             // create repository & modelManager services
             $mapping = (isset($attributes['fields_mapping'])) ? $container->getParameter($attributes['fields_mapping']) : array();
@@ -49,7 +50,6 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             if (isset($attributes['fastGrid']) && $attributes['fastGrid']) {
                 if (isset($attributes['transformer'])) {
                     $transformerService = $this->getCustomTransformer($container, $attributes['transformer']);
-
                 } else {
                     $transformerService = $this->createBasicTransformer($id);
                 }
@@ -190,8 +190,15 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      *
      * @return Definition
      */
-    private function getFinderService(ContainerBuilder $container, $searchIndex)
+    private function createFinderService(ContainerBuilder $container, $searchIndex)
     {
-        return $container->getDefinition(sprintf('fos_elastica.finder.%s', $searchIndex));
+        $defaultFinderServiceName = sprintf('fos_elastica.finder.%s', $searchIndex);
+        $defaultFinderService = $container->getDefinition($defaultFinderServiceName);
+
+        $finderService = new Definition($defaultFinderServiceName.'.admin');
+        $finderService->setClass($defaultFinderService->getClass());
+        $finderService->setArguments($defaultFinderService->getArguments());
+
+        return $finderService;
     }
 }
