@@ -30,7 +30,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
 
             // create repository & modelManager services
             $mapping = (isset($attributes['fields_mapping'])) ? $container->getParameter($attributes['fields_mapping']) : array();
-            $proxyRepositoryService = $this->createProxyRepositoryService($container, $id, $finderService, $mapping);
+            $proxyRepositoryService = $this->createProxyRepositoryService($container->getParameter('marmelab.elastica.proxy_repository_class'), $id, $finderService, $mapping);
             $modelManagerService = $this->createModelManagerService($id, $ormModelManagerService, $proxyRepositoryService);
 
             // create datagrid builder service
@@ -65,11 +65,11 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      *
      * @return Definition
      */
-    private function createProxyRepositoryService(ContainerBuilder $container, $adminName, Definition $finder, array $mapping)
+    private function createProxyRepositoryService($class, $adminName, Definition $finder, array $mapping)
     {
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
-        $service->setClass($container->getParameter('marmelab.elastica.proxy_repository_class'));
+        $service->setClass($class);
         $service->setArguments( array(
             $finder,
             $mapping

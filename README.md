@@ -159,7 +159,7 @@ fetched from the doctrine/propel repository. The transformer class should also h
 
 ## Optional: Use mapping for fields
 
-To match fields in elastica index and in your application, you can configure the mapping for your entity as a parameter collection:
+To match fields between Elastica index and your application, you can configure the mapping for your entity as a parameter collection:
 
 ```xml
 <parameter key="book.admin.elastica.mapping" type="collection">
