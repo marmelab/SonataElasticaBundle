@@ -57,8 +57,8 @@ For string fields, if you want to be able to sort and to search on them, you may
 * The first one, named after the field, required for filters, must use `index: analyzed`
 * The second one, named `raw`, required for sorting, must use `index: not_analyzed`
 
-For more information about this, see [http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type)
-(or this, as the 1.0 version of Elastic search was realised recently [http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html)
+For more information about this, see [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type)
+(or [this one](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html), as the 1.0 version of ElasticSearch was released recently).
 
 
 **Example**
