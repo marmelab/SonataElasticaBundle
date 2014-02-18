@@ -9,6 +9,7 @@ use Sonata\AdminBundle\Admin\AdminInterface;
 use Sonata\AdminBundle\Filter\FilterFactoryInterface;
 use Sonata\AdminBundle\Guesser\TypeGuesserInterface;
 use Sonata\DoctrineORMAdminBundle\Builder\DatagridBuilder as BaseDatagridBuilder;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormFactory;
 
 class ElasticaDatagridBuilder extends BaseDatagridBuilder
@@ -16,6 +17,7 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
     /** @var ElasticaProxyRepository */
     protected $repository;
 
+    /** @var AbstractType */
     protected $searchForm;
 
     /**
@@ -24,7 +26,7 @@ class ElasticaDatagridBuilder extends BaseDatagridBuilder
      * @param TypeGuesserInterface    $guesser
      * @param ElasticaProxyRepository $repository
      */
-    public function __construct(FormFactory $formFactory, FilterFactoryInterface $filterFactory, TypeGuesserInterface $guesser, ElasticaProxyRepository $repository, $searchForm)
+    public function __construct(FormFactory $formFactory, FilterFactoryInterface $filterFactory, TypeGuesserInterface $guesser, ElasticaProxyRepository $repository, AbstractType $searchForm)
     {
         parent::__construct($formFactory, $filterFactory, $guesser);
 
