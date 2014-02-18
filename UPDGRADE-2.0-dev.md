@@ -11,7 +11,7 @@ UPGRADE FROM 1.0-dev to 2.0-dev
 So to make both works, in the 1.0-dev version, all the fields (except `id`) must be set to `multi_field` with a `raw` sub-field: the `raw` sub-field is `not_analyzed` and is used to sort.
 
 For more information about this, see [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type)
-(or [this](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html) one, as the 1.0 version of Elastic search was realised recently).
+(or [this](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html) one, as the 1.0 version of ElasticSearch was released recently).
 
 So the bundle won't work if one of your field does not have a `raw` sub-field.
 Which is not a good thing, especially as you don't need an `analyzed` field to do an exact match:
