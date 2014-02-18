@@ -50,12 +50,16 @@ public function registerBundles()
 ## Configuration of Elastica Index
 
 For each model that you index, the identifier field (`id`) must be specified, with the type `integer`.
+Configure other fields as `multi_field` is not required anymore, see [UPGRADE-2.0-dev.md](./UPGRADE-2.0-dev.md).
 
-All the other fields must be set as `multi_field`, with (at least) these two "sub-fields":
+
+For string fields, if you want to be able to sort and to search on them, you may want to declare them as `multi_field`, with two "sub-fields"
 * The first one, named after the field, required for filters, must use `index: analyzed`
 * The second one, named `raw`, required for sorting, must use `index: not_analyzed`
 
-For more information about this, see [http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-multi-field-type.html#mapping-multi-field-type](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-multi-field-type.html#mapping-multi-field-type)
+For more information about this, see [ElasticSearch documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type)
+(or [this one](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html), as the 1.0 version of ElasticSearch was released recently).
+
 
 **Example**
 
@@ -68,12 +72,24 @@ book:
             fields:
                 title: { type: string, index: analyzed }
                 raw: { type: string, index: not_analyzed }
-        summary:
-            type: multi_field
-            fields:
-                summary: { type: string, index: analyzed }
-                raw: { type: string, index: not_analyzed }
+        created_at: { type: date }
         ...
+```
+
+
+Then, in your Admin class, configure the field to use the `not_analyzed` sub-field:
+
+```php
+    protected function configureListFields(ListMapper $listMapper)
+    {
+        $listMapper
+            ->add('title', 'string', array(
+                'sortable' => true,
+                'sort_field_mapping' => ["fieldName" => "title.raw", "type"=> "string"] // To be able to sort by title.raw which is not_analyzed
+            ))
+            ...
+        ;
+    }
 ```
 
 ## Configuration
@@ -142,6 +158,58 @@ Using your custom transformer:
 The default transformer does basic hydration using setters and makes a few assumptions, like the fact that entities provide a `setId()` method.
 You can of course use a custom transformer to implement a more sophisticated hydration logic, by providing your service's id. The transformer class must have a `transform` method, converting an array of elastica objects into an array of model objects,
 fetched from the doctrine/propel repository. The transformer class should also have a setter for the `objectClass` attribute.
+
+
+## Optional: Use mapping for fields
+
+To match fields between Elastica index and your application, you can configure the mapping for your entity as a parameter collection:
+
+```xml
+<parameter key="book.admin.elastica.mapping" type="collection">
+    <parameter key="contentType">_type</parameter>
+    <parameter key="publicationDate">publication_timestamp</parameter>
+    <parameter key="lastUpdateDate">last_update_timestamp</parameter>
+</parameter>
+```
+
+Then specify this parameter in your tag admin
+
+```xml
+ <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
+         search_index="acme.book"
+         fields_mapping="book.admin.elastica.mapping" />
+```
+
+## Optional: Define a custom filter for your admin
+
+You can specify a custom filter (using elastica filter classes) for your entity admin.
+Simply add a `getExtraFilter()` method in the admin class.
+
+For example, if in my book admin list I want to fetch only the ones that are in a PDF or epub format:
+
+```php
+// in Acme\BookBundle\Admin\BookAdmin
+use Elastica\Filter\Terms;
+
+...
+
+public function getExtraFilter() {
+    $filter = new Terms();
+    $filter->setTerms('format', array('pdf', 'epub'));
+
+    return $filter;
+}
+```
+
+## Optional: Use a custom form filter type
+
+To use a custom form filter class, specify it in the admin tag:
+
+```xml
+ <tag name="sonata.admin" group="Content" label="Books" manager_type="orm"
+         search_index="acme.book"
+         search_form="my.custom.filter.form_type" />
+```
 
 ## License
 

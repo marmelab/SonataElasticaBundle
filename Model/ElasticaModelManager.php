@@ -37,6 +37,22 @@ class ElasticaModelManager implements ModelManagerInterface
         return call_user_func_array(array(($this->baseModelManager), $name), $args);
     }
 
+    public function getParentMetadataForProperty($baseClass, $propertyFullName)
+    {
+        $nameElements = explode('.', $propertyFullName);
+        $lastPropertyName = array_pop($nameElements);
+        $class = $baseClass;
+        $parentAssociationMappings = array();
+
+        foreach ($nameElements as $nameElement) {
+            $metadata = $this->getMetadata($class);
+            $parentAssociationMappings[] = $metadata->associationMappings[$nameElement];
+            $class = $metadata->getAssociationTargetClass($nameElement);
+        }
+
+        return array($this->getMetadata($class), $lastPropertyName, $parentAssociationMappings);
+    }
+
     /**
      * Returns a new FieldDescription
      *
@@ -201,10 +217,12 @@ class ElasticaModelManager implements ModelManagerInterface
         $identifier = $this->baseModelManager->getNormalizedIdentifier($model);
 
         if ($identifier === null) {
-            $identifierName = current($this->getModelIdentifier(get_class($model)));
+            $identifierName = is_array($this->getModelIdentifier(get_class($model))) ? current($this->getModelIdentifier(get_class($model))) : $this->getModelIdentifier(get_class($model));
 
             return $model->{'get'.ucfirst($identifierName)}();
         }
+
+        return $identifier;
     }
 
     /**
@@ -219,7 +237,7 @@ class ElasticaModelManager implements ModelManagerInterface
      */
     public function getUrlsafeIdentifier($model)
     {
-        return $model->getId();
+        return $model ? $model->getId() : null;
     }
 
     /**

@@ -5,11 +5,14 @@ namespace Marmelab\SonataElasticaBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
 {
+
     public function process(ContainerBuilder $container)
     {
+
         $taggedServices = $container->findTaggedServiceIds('sonata.admin');
 
         foreach ($taggedServices as $id => $attributes) {
@@ -23,12 +26,16 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             // get services
             $ormGuesserService = $this->getSonataORMGuesserService($container, $attributes['manager_type']);
             $ormModelManagerService = $this->getSonataORMModelManagerService($container, $attributes['manager_type']);
-            $finderService = $this->getFinderService($container, $attributes['search_index']);
+            $finderService = $this->createFinderService($container, $attributes['search_index']);
 
-            // create repository, datagrid & modelManager services
-            $proxyRepositoryService = $this->createProxyRepositoryService($id, $finderService);
-            $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService);
+            // create repository & modelManager services
+            $mapping = (isset($attributes['fields_mapping'])) ? $container->getParameter($attributes['fields_mapping']) : array();
+            $proxyRepositoryService = $this->createProxyRepositoryService($container->getParameter('marmelab.elastica.proxy_repository_class'), $id, $finderService, $mapping);
             $modelManagerService = $this->createModelManagerService($id, $ormModelManagerService, $proxyRepositoryService);
+
+            // create datagrid builder service
+            $searchForm = isset($attributes['search_form']) ? new Reference($attributes['search_form']) : null;
+            $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService, $searchForm);
 
             // define model manager & datagrid to admin service
             $adminService = $container->getDefinition($id);
@@ -36,7 +43,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $adminService->addMethodCall('setDatagridBuilder', array($datagridService));
 
             // set custom transformer
-            if (isset($attributes['fastgrid']) && $attributes['fastgrid']) {
+            if (isset($attributes['fastGrid']) && $attributes['fastGrid']) {
                 if (isset($attributes['transformer'])) {
                     $transformerService = $this->getCustomTransformer($container, $attributes['transformer']);
                 } else {
@@ -48,18 +55,20 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param string     $adminName
-     * @param Definition $finder
+     * @param string           $class
+     * @param string           $adminName
+     * @param Definition       $finder
      *
      * @return Definition
      */
-    private function createProxyRepositoryService($adminName, Definition $finder)
+    private function createProxyRepositoryService($class, $adminName, Definition $finder, array $mapping)
     {
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
-        $service->setClass('Marmelab\SonataElasticaBundle\Repository\ElasticaProxyRepository');
+        $service->setClass($class);
         $service->setArguments( array(
-            $finder
+            $finder,
+            $mapping
         ));
 
         return $service;
@@ -70,10 +79,11 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      * @param string           $adminName
      * @param Definition       $guesser
      * @param Definition       $proxyRepository
+     * @param Reference        $searchType
      *
      * @return Definition
      */
-    private function createDatagridService(ContainerBuilder $container, $adminName, Definition $guesser, Definition $proxyRepository)
+    private function createDatagridService(ContainerBuilder $container, $adminName, Definition $guesser, Definition $proxyRepository, Reference $searchForm = null)
     {
         $serviceName = sprintf('sonata.%s.datagrid', $adminName);
         $service = new Definition($serviceName);
@@ -82,7 +92,8 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $container->getDefinition('form.factory'),
             $container->getDefinition('sonata.admin.builder.filter.factory'),
             $guesser,
-            $proxyRepository
+            $proxyRepository,
+            $searchForm
         ));
 
         return $service;
@@ -123,6 +134,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     /**
      * @param ContainerBuilder $container
      * @param string           $transformerServiceName
+     *
      * @return Definition
      */
     private function getCustomTransformer(ContainerBuilder $container, $transformerServiceName)
@@ -174,8 +186,15 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      *
      * @return Definition
      */
-    private function getFinderService(ContainerBuilder $container, $searchIndex)
+    private function createFinderService(ContainerBuilder $container, $searchIndex)
     {
-        return $container->getDefinition(sprintf('fos_elastica.finder.%s', $searchIndex));
+        $defaultFinderServiceName = sprintf('fos_elastica.finder.%s', $searchIndex);
+        $defaultFinderService = $container->getDefinition($defaultFinderServiceName);
+
+        $finderService = new Definition($defaultFinderServiceName.'.admin');
+        $finderService->setClass($defaultFinderService->getClass());
+        $finderService->setArguments($defaultFinderService->getArguments());
+
+        return $finderService;
     }
 }
