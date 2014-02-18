@@ -27,6 +27,7 @@ class ElasticaProxyRepository
 
     /**
      * @param FinderInterface $finder
+     * param  array           $fieldsMapping
      *
      * @return $this
      */
@@ -36,6 +37,9 @@ class ElasticaProxyRepository
         $this->fieldsMapping = $fieldsMapping;
     }
 
+    /**
+     * @param AdminInterface $admin
+     */
     public function setAdmin(AdminInterface $admin)
     {
         $this->admin = $admin;

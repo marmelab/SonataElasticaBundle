@@ -34,12 +34,8 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
             $modelManagerService = $this->createModelManagerService($id, $ormModelManagerService, $proxyRepositoryService);
 
             // create datagrid builder service
-            $searchForm = null;
-            if (isset($attributes['search_form'])) {
-                $searchForm = new Reference($attributes['search_form']);
-            }
+            $searchForm = isset($attributes['search_form']) ? new Reference($attributes['search_form']) : null;
             $datagridService = $this->createDatagridService($container, $id, $ormGuesserService, $proxyRepositoryService, $searchForm);
-
 
             // define model manager & datagrid to admin service
             $adminService = $container->getDefinition($id);
@@ -59,7 +55,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param ContainerBuilder $container
+     * @param string           $class
      * @param string           $adminName
      * @param Definition       $finder
      *

@@ -28,11 +28,8 @@ class ElasticaDatagrid extends Datagrid
      */
     public function __construct(ProxyQueryInterface $query, AbstractType $searchForm, FieldDescriptionCollection $columns, PagerInterface $pager, FormBuilder $formBuilder, array $values = array())
     {
-        $this->pager       = $pager;
-        $this->query       = $query;
-        $this->values      = $values;
-        $this->columns     = $columns;
-        $this->formBuilder = $formBuilder;
+        parent::__construct($query, $columns, $pager, $formBuilder, $values);
+
         $this->searchForm  = $searchForm;
     }
 
@@ -76,16 +73,12 @@ class ElasticaDatagrid extends Datagrid
                 if ($filterValue === null || $filterValue === '') {
                     return false;
                 }
+                if (!is_array($filterValue)) {
+                    return true;
+                }
 
-                if (is_array($filterValue)) {
-                    $empty = false;
-                    foreach ($filterValue as $value) {
-                        if ($value === null || $value === '') {
-                            $empty = true;
-                            break;
-                        }
-                    }
-                    if ($empty) {
+                foreach ($filterValue as $value) {
+                    if ($value === null || $value === '') {
                         return false;
                     }
                 }
