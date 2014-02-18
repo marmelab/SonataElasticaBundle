@@ -50,13 +50,16 @@ public function registerBundles()
 ## Configuration of Elastica Index
 
 For each model that you index, the identifier field (`id`) must be specified, with the type `integer`.
-Configure other fields as `multi_field` is not required anymore.
+Configure other fields as `multi_field` is not required anymore, see [UPGRADE-2.0-dev.md](./UPGRADE-2.0-dev.md).
 
-For string fields, if you want to be able to sort and to filter by them, you may want to declare them as `multi_field`, with two "sub-fields"
+
+For string fields, if you want to be able to sort and to search on them, you may want to declare them as `multi_field`, with two "sub-fields"
 * The first one, named after the field, required for filters, must use `index: analyzed`
 * The second one, named `raw`, required for sorting, must use `index: not_analyzed`
 
-For more information about this, see [http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-multi-field-type.html#mapping-multi-field-type](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-multi-field-type.html#mapping-multi-field-type)
+For more information about this, see [http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type](http://www.elasticsearch.org/guide/en/elasticsearch/reference/0.90/mapping-multi-field-type.html#mapping-multi-field-type)
+(or this, as the 1.0 version of Elastic search was realised recently [http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/_multi_fields.html)
+
 
 **Example**
 
