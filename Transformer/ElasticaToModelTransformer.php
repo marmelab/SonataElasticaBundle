@@ -3,16 +3,21 @@
 namespace Marmelab\SonataElasticaBundle\Transformer;
 
 use FOS\ElasticaBundle\Transformer\ElasticaToModelTransformerInterface;
+use FOS\ElasticaBundle\HybridResult;
 
 class ElasticaToModelTransformer implements ElasticaToModelTransformerInterface
 {
-
     protected $options = array(
         'hydrate'        => false,
         'identifier'     => '_id',
         'ignore_missing' => false,
     );
 
+    /**
+     *
+     * @param type $objectClass
+     * @return \Marmelab\SonataElasticaBundle\Transformer\ElasticaToModelTransformer
+     */
     public function setObjectClass($objectClass)
     {
         $this->objectClass = $objectClass;
@@ -20,27 +25,21 @@ class ElasticaToModelTransformer implements ElasticaToModelTransformerInterface
         return $this;
     }
 
+
     /**
-     * Returns the object class that is used for conversion.
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getObjectClass()
     {
         return $this->objectClass;
     }
 
+
     /**
-     * Transforms an array of elastica objects into an array of
-     * model objects
-     *
-     * @param  array             $elasticaObjects of elastica objects
-     * @throws \RuntimeException
-     * @return array
-     **/
+     * {@inheritdoc}
+     */
     public function transform(array $elasticaObjects)
     {
-
         $results = array();
 
         foreach ($elasticaObjects as $elasticaObject) {
@@ -50,19 +49,22 @@ class ElasticaToModelTransformer implements ElasticaToModelTransformerInterface
             $obj->setId($elasticaObject['_id']);
 
             foreach ($elasticaObject['_source'] as $attributeName => $attributeValue) {
-
                 if (property_exists($this->objectClass, $attributeName)) {
                     $method = 'set' . str_replace(' ', '', ucwords(str_replace('_', ' ', $attributeName)));
                     $obj->{$method}($attributeValue);
                 }
-
             }
+
             $results[$obj->getId()] = $obj;
         }
 
         return $results;
     }
 
+
+    /**
+     * {@inheritdoc}
+     */
     public function hybridTransform(array $elasticaObjects)
     {
         $objects = $this->transform($elasticaObjects);

@@ -8,11 +8,12 @@ use Sonata\AdminBundle\Datagrid\Pager as BasePager;
 class ElasticaPager extends BasePager
 {
     /**
-     * {@inheritdoc}
+     *
+     * @return int
      */
     public function computeNbResult()
     {
-        return $this->getQuery()->getTotalResults();
+        return $this->getQuery()->count();
     }
 
     /**
@@ -20,7 +21,7 @@ class ElasticaPager extends BasePager
      */
     public function getResults($hydrationMode = Query::HYDRATE_OBJECT)
     {
-        return $this->getQuery()->execute(array(), $hydrationMode);
+        return $this->getQuery()->execute(array(), $hydrationMode)->toArray();
     }
 
     /**
@@ -29,24 +30,22 @@ class ElasticaPager extends BasePager
     public function init()
     {
         $this->resetIterator();
+
+        $query = $this->getQuery();
+        $query->setMaxResults($this->getMaxPerPage());
         $this->setNbResults($this->computeNbResult());
 
-        $this->getQuery()->setFirstResult(null);
-        $this->getQuery()->setMaxResults(null);
-
-        if (count($this->getParameters()) > 0) {
-            $this->getQuery()->setParameters($this->getParameters());
+        if ($parameters = $this->getParameters()) {
+            $query->setParameters($parameters);
         }
 
-        if (0 == $this->getPage() || 0 == $this->getMaxPerPage() || 0 == $this->getNbResults()) {
+        if (0 === $this->getPage() || 0 === $this->getMaxPerPage() || 0 === $this->getNbResults()) {
             $this->setLastPage(0);
-        } else {
-            $offset = ($this->getPage() - 1) * $this->getMaxPerPage();
-
-            $this->setLastPage(ceil($this->getNbResults() / $this->getMaxPerPage()));
-
-            $this->getQuery()->setFirstResult($offset);
-            $this->getQuery()->setMaxResults($this->getMaxPerPage());
+            return;
         }
+
+        $offset = ($this->getPage() - 1) * $this->getMaxPerPage();
+        $this->setLastPage(ceil($this->getNbResults() / $this->getMaxPerPage()));
+        $query->setFirstResult($offset);
     }
 }

@@ -37,13 +37,19 @@ class ElasticaModelManager implements ModelManagerInterface
         return call_user_func_array(array(($this->baseModelManager), $name), $args);
     }
 
+    /**
+     *
+     * @param type $baseClass
+     * @param type $propertyFullName
+     * @return type
+     */
     public function getParentMetadataForProperty($baseClass, $propertyFullName)
     {
         $nameElements = explode('.', $propertyFullName);
         $lastPropertyName = array_pop($nameElements);
         $class = $baseClass;
-        $parentAssociationMappings = array();
 
+        $parentAssociationMappings = array();
         foreach ($nameElements as $nameElement) {
             $metadata = $this->getMetadata($class);
             $parentAssociationMappings[] = $metadata->associationMappings[$nameElement];

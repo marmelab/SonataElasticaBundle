@@ -9,10 +9,11 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class AdminTagElasticaCompilerPass implements CompilerPassInterface
 {
-
+    /**
+     * {@inheritdoc}
+     */
     public function process(ContainerBuilder $container)
     {
-
         $taggedServices = $container->findTaggedServiceIds('sonata.admin');
 
         foreach ($taggedServices as $id => $attributes) {
@@ -66,7 +67,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
         $serviceName = sprintf('sonata.%s.proxy_repository', $adminName);
         $service = new Definition($serviceName);
         $service->setClass($class);
-        $service->setArguments( array(
+        $service->setArguments(array(
             $finder,
             $mapping
         ));
@@ -79,7 +80,7 @@ class AdminTagElasticaCompilerPass implements CompilerPassInterface
      * @param string           $adminName
      * @param Definition       $guesser
      * @param Definition       $proxyRepository
-     * @param Reference        $searchType
+     * @param Reference        $searchForm
      *
      * @return Definition
      */
