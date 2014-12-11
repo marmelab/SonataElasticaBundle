@@ -54,24 +54,12 @@ class ElasticaProxyQuery implements ProxyQueryInterface
      */
     public function execute(array $params = array(), $hydrationMode = null)
     {
-        return $this->repository->getResults(array(
+        return $this->repository->getResultsAndTotalHits(array(
             'params' => array_merge($this->params, $params),
             'sortBy' => $this->getSortBy(),
             'sortOrder' => $this->getSortOrder(),
             'start' => $this->getFirstResult(),
             'limit' => $this->getMaxResults(),
-        ));
-    }
-
-    /**
-     *
-     * @param array $params
-     * @return type
-     */
-    public function count(array $params = array())
-    {
-        return $this->repository->getNbResults(array(
-            'params' => array_merge($this->params, $params)
         ));
     }
 

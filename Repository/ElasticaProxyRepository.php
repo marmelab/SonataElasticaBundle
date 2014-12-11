@@ -59,7 +59,7 @@ class ElasticaProxyRepository
      * @param type $options
      * @return type
      */
-    protected function getMinimalQuery($options)
+    public function getResultsAndTotalHits($options)
     {
         $query = $options['params'] ? $this->createFilterQuery($options['params']) : new Elastica_Query();
 
@@ -68,37 +68,14 @@ class ElasticaProxyRepository
             $query->setFilter($this->admin->getExtraFilter());
         }
 
-        return $query;
-    }
-
-    /**
-     *
-     * @param type $options
-     * @return type
-     */
-    public function getResults($options)
-    {
-        $query = $this->getMinimalQuery($options);
-
         $query->setSort($this->getSort($options['sortBy'], $options['sortOrder']));
 
-        return $this->finder->createPaginatorAdapter($query)
-                            ->getResults($options['start'], $options['limit']);
-    }
+        $paginatorAdapter = $this->finder->createPaginatorAdapter($query);
 
-    /**
-     *
-     * @param type $options
-     * @return type
-     */
-    public function getNbResults($options)
-    {
-        $query = $this->getMinimalQuery($options);
-
-        $query->setFields(array());
-
-        return $this->finder->createPaginatorAdapter($query)
-                            ->getTotalHits();
+        return array(
+            'results' => $paginatorAdapter->getResults($options['start'], $options['limit']),
+            'totalHits' => $paginatorAdapter->getTotalHits()
+        );
     }
 
     /**
