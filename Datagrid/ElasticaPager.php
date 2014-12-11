@@ -37,8 +37,6 @@ class ElasticaPager extends BasePager
             $offset = ($this->getPage() - 1) * $this->getMaxPerPage();
             $query->setFirstResult($offset);
         }
-
-        $this->setLastPage(0);
     }
 
     /**
@@ -51,7 +49,7 @@ class ElasticaPager extends BasePager
         if (!$totalHits) {
             return;
         }
-        
+
         $this->setNbResults($totalHits);
         $this->setLastPage(ceil($this->getNbResults() / $this->getMaxPerPage()));
     }
