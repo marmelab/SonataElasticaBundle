@@ -65,7 +65,7 @@ class ElasticaProxyRepository
 
         // Custom filter for admin
         if (method_exists($this->admin, 'getExtraFilter')) {
-            $query->setFilter($this->admin->getExtraFilter());
+            $query->setPostFilter($this->admin->getExtraFilter());
         }
 
         $query->setSort($this->getSort($options['sortBy'], $options['sortOrder']));
