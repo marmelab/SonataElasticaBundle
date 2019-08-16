@@ -7,7 +7,6 @@ use Sonata\AdminBundle\Admin\FieldDescriptionInterface;
 use Sonata\AdminBundle\Datagrid\Datagrid;
 use Sonata\AdminBundle\Datagrid\PagerInterface;
 use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
-use Sonata\AdminBundle\Filter\FilterInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
@@ -15,7 +14,6 @@ use Symfony\Component\Form\CallbackTransformer;
 
 class ElasticaDatagrid extends Datagrid
 {
-
     /** @var AbstractType */
     protected $searchForm;
 
@@ -44,6 +42,7 @@ class ElasticaDatagrid extends Datagrid
 
         if ($this->searchForm) {
             $this->formBuilder->add('admin_search_form', $this->searchForm, array('label' => false));
+            
         } else {
             foreach ($this->getFilters() as $filter) {
                 list($type, $options) = $filter->getRenderSettings();
@@ -68,7 +67,6 @@ class ElasticaDatagrid extends Datagrid
         $data = $this->form->getData();
 
         if ($this->searchForm) {
-
             $filters = array_filter($data['admin_search_form'], function($filterValue) {
                 if ($filterValue === null || $filterValue === '') {
                     return false;
@@ -86,11 +84,11 @@ class ElasticaDatagrid extends Datagrid
                 return true;
             });
 
-            foreach($filters as $filterName => $filterValue) {
+            foreach ($filters as $filterName => $filterValue) {
                 $this->query->setParameter($filterName, $filterValue);
             }
-        }
-        else {
+
+        } else {
             foreach ($this->getFilters() as $name => $filter) {
                 $this->values[$name] = isset($this->values[$name]) ? $this->values[$name] : null;
                 $filter->apply($this->query, $data[$filter->getFormName()]);
@@ -102,7 +100,6 @@ class ElasticaDatagrid extends Datagrid
             }
         }
 
-
         if (isset($this->values['_sort_by'])) {
             if (!$this->values['_sort_by'] instanceof FieldDescriptionInterface) {
                 throw new UnexpectedTypeException($this->values['_sort_by'],'FieldDescriptionInterface');
@@ -113,7 +110,6 @@ class ElasticaDatagrid extends Datagrid
                 $this->query->setSortOrder(isset($this->values['_sort_order']) ? $this->values['_sort_order'] : null);
             }
         }
-
 
         $this->pager->setMaxPerPage(isset($this->values['_per_page']) ? $this->values['_per_page'] : 25);
         $this->pager->setPage(isset($this->values['_page']) ? $this->values['_page'] : 1);

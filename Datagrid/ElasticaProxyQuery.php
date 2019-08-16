@@ -26,7 +26,7 @@ class ElasticaProxyQuery implements ProxyQueryInterface
     protected $limit;
 
     /** @var array */
-    protected $params;
+    protected $params = array();
 
     /**
      * @param ElasticaProxyRepository $repository
@@ -36,7 +36,6 @@ class ElasticaProxyQuery implements ProxyQueryInterface
     {
         $this->repository = $repository;
         $this->baseProxyQuery = $baseProxyQuery;
-        $this->params = array();
     }
 
     /**
@@ -55,9 +54,13 @@ class ElasticaProxyQuery implements ProxyQueryInterface
      */
     public function execute(array $params = array(), $hydrationMode = null)
     {
-        $this->params = array_merge($this->params, $params);
-
-        return $this->repository->findAll($this->firstResult, $this->limit, $this->sortBy, $this->sortOrder, $this->params);
+        return $this->repository->getResultsAndTotalHits(array(
+            'params' => array_merge($this->params, $params),
+            'sortBy' => $this->getSortBy(),
+            'sortOrder' => $this->getSortOrder(),
+            'start' => $this->getFirstResult(),
+            'limit' => $this->getMaxResults(),
+        ));
     }
 
     /**
@@ -85,19 +88,6 @@ class ElasticaProxyQuery implements ProxyQueryInterface
     public function getParameters()
     {
         return $this->params;
-    }
-
-    public function getTotalResults()
-    {
-        return $this->repository->getTotalResult($this->firstResult, $this->limit, $this->sortBy, $this->sortOrder, $this->params);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __get($name)
-    {
-        return array();
     }
 
     /**
@@ -140,13 +130,6 @@ class ElasticaProxyQuery implements ProxyQueryInterface
      * {@inheritdoc}
      */
     public function getSingleScalarResult()
-    {
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __clone()
     {
     }
 

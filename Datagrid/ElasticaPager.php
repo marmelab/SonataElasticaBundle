@@ -10,17 +10,13 @@ class ElasticaPager extends BasePager
     /**
      * {@inheritdoc}
      */
-    public function computeNbResult()
-    {
-        return $this->getQuery()->getTotalResults();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getResults($hydrationMode = Query::HYDRATE_OBJECT)
     {
-        return $this->getQuery()->execute(array(), $hydrationMode);
+        $resultsAndTotalHits = $this->getQuery()->execute(array(), $hydrationMode);
+
+        $this->updatePagesSettings($resultsAndTotalHits['totalHits']);
+
+        return $resultsAndTotalHits['results']->toArray();
     }
 
     /**
@@ -29,24 +25,32 @@ class ElasticaPager extends BasePager
     public function init()
     {
         $this->resetIterator();
-        $this->setNbResults($this->computeNbResult());
 
-        $this->getQuery()->setFirstResult(null);
-        $this->getQuery()->setMaxResults(null);
+        $query = $this->getQuery();
+        $query->setMaxResults($this->getMaxPerPage());
 
-        if (count($this->getParameters()) > 0) {
-            $this->getQuery()->setParameters($this->getParameters());
+        if ($parameters = $this->getParameters()) {
+            $query->setParameters($parameters);
         }
 
-        if (0 == $this->getPage() || 0 == $this->getMaxPerPage() || 0 == $this->getNbResults()) {
-            $this->setLastPage(0);
-        } else {
+        if ($this->getPage() && $this->getMaxPerPage()) {
             $offset = ($this->getPage() - 1) * $this->getMaxPerPage();
-
-            $this->setLastPage(ceil($this->getNbResults() / $this->getMaxPerPage()));
-
-            $this->getQuery()->setFirstResult($offset);
-            $this->getQuery()->setMaxResults($this->getMaxPerPage());
+            $query->setFirstResult($offset);
         }
+    }
+
+    /**
+     *
+     * @param type $totalHits
+     * @return type
+     */
+    protected function updatePagesSettings($totalHits)
+    {
+        if (!$totalHits) {
+            return;
+        }
+
+        $this->setNbResults($totalHits);
+        $this->setLastPage(ceil($this->getNbResults() / $this->getMaxPerPage()));
     }
 }

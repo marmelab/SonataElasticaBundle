@@ -2,10 +2,7 @@
 
 namespace Marmelab\SonataElasticaBundle\Repository;
 
-use Elastica\Query;
-use Elastica\Query\Bool as QueryBool;
-use Elastica\Query\Text as QueryText;
-use Elastica\Query\AbstractQuery;
+use Elastica\Query as Elastica_Query;
 use FOS\ElasticaBundle\Finder\FinderInterface;
 use Sonata\AdminBundle\Admin\AdminInterface;
 
@@ -58,61 +55,27 @@ class ElasticaProxyRepository
     }
 
     /**
-     * @param int    $start
-     * @param int    $limit
-     * @param string $sortBy
-     * @param string $sortOrder
-     * @param array  $params
      *
-     * @return int
+     * @param type $options
+     * @return type
      */
-    public function getTotalResult($start, $limit, $sortBy, $sortOrder, $params)
+    public function getResultsAndTotalHits($options)
     {
-        $results = $this->findAll($start, $limit, $sortBy, $sortOrder, $params);
-
-        return count($results);
-    }
-
-    /**
-     * @param int    $start
-     * @param int    $limit
-     * @param string $sortBy
-     * @param string $sortOrder
-     * @param array  $params
-     *
-     * @return int
-     */
-    public function findAll($start, $limit, $sortBy, $sortOrder = 'ASC', $params)
-    {
-        $query = count($params) ? $this->createFilterQuery($params) : new Query();
-        $query->setFrom($start);
-
-        // Sort & order
-        $fieldName = (isset($sortBy['fieldName'])) ? $sortBy['fieldName'] : null;
-
-        if ($fieldName !== null && $fieldName !== $this->modelIdentifier) {
-
-            if (isset($this->fieldsMapping[$fieldName])) {
-                $fieldName = $this->fieldsMapping[$fieldName];
-            }
-            $query->setSort(array($fieldName => array('order' => strtolower($sortOrder))));
-        } else {
-            $query->setSort(array(
-                $this->modelIdentifier => array('order' => strtolower($sortOrder)),
-            ));
-        }
+        $query = $options['params'] ? $this->createFilterQuery($options['params']) : new Elastica_Query();
 
         // Custom filter for admin
-        if(method_exists($this->admin, 'getExtraFilter')) {
-            $query->setFilter($this->admin->getExtraFilter());
+        if (method_exists($this->admin, 'getExtraFilter')) {
+            $query->setPostFilter($this->admin->getExtraFilter());
         }
 
-        // Limit
-        if ($limit === null) {
-            $limit = 10000; // set to 0 does not seem to work
-        }
+        $query->setSort($this->getSort($options['sortBy'], $options['sortOrder']));
 
-        return $this->finder->find($query, $limit);
+        $paginatorAdapter = $this->finder->createPaginatorAdapter($query);
+
+        return array(
+            'results' => $paginatorAdapter->getResults($options['start'], $options['limit']),
+            'totalHits' => $paginatorAdapter->getTotalHits()
+        );
     }
 
     /**
@@ -124,30 +87,55 @@ class ElasticaProxyRepository
      */
     protected function getQueryString($query)
     {
-        $wrapper = ($query instanceof AbstractQuery) ? array('query' => $query->toArray()) : $query->toArray();
+        $wrapper = ($query instanceof Elastica_Query) ? array('query' => $query->toArray()) : $query->toArray();
 
         return json_encode($wrapper);
     }
 
     /**
      * @param array $params
-     * 
+     *
      * @return Query
      */
     protected function createFilterQuery(array $params)
     {
-        $mainQuery = new QueryBool();
+        $mainQuery = new Elastica_Query\Bool();
         foreach ($params as $name => $value) {
             $fieldName = str_replace('_elastica', '', $name);
             if (strlen($value) < self::MINIMUM_SEARCH_TERM_LENGTH) {
                 continue;
             }
 
-            $fieldQuery = new QueryText();
+            $fieldQuery = new Elastica_Query\Match();
             $fieldQuery->setFieldQuery($fieldName, $value);
             $mainQuery->addMust($fieldQuery);
         }
 
-        return new Query($mainQuery);
+        return new Elastica_Query($mainQuery);
+    }
+
+    /**
+     *
+     * @param type $sortBy
+     * @param type $sortOrder
+     * @return type
+     */
+    protected function getSort($sortBy, $sortOrder = 'ASC')
+    {
+        $fieldName = isset($sortBy['fieldName']) ? $sortBy['fieldName'] : null;
+
+        if ((null === $fieldName) || ($fieldName === $this->modelIdentifier)) {
+            return array(
+                $this->modelIdentifier => array('order' => strtolower($sortOrder))
+            );
+        }
+
+        if (isset($this->fieldsMapping[$fieldName])) {
+            $fieldName = $this->fieldsMapping[$fieldName];
+        }
+
+        return array(
+            $fieldName => array('order' => strtolower($sortOrder))
+        );
     }
 }
